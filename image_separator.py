@@ -16,9 +16,12 @@ fpath_categories = './train_res/categories/'
 
 df = pd.read_csv(os.path.expanduser(fname))
 
+if not os.path.exists(fpath_categories):
+        os.mkdir(fpath_categories)
+
 for index,row in  df.iterrows():
     #print(row["level"])
     print(row["image"])
     if not os.path.exists(fpath_categories + str(row["level"])):
         os.mkdir(fpath_categories + str(row["level"]))
-    shutil.copy(fpath_raw + row["image"] + ".tiff", fpath_categories + str(row["level"]) + "/" + row["image"] + ".tif")
+    shutil.copy(fpath_raw + row["image"] + ".tiff", fpath_categories + str(row["level"]) + "/" + row["image"] + ".tiff")

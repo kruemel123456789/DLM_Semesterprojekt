@@ -54,14 +54,14 @@ np.random.seed(SEED)
 # dimensions of our images.
 img_width, img_height = 512, 512
 num_classes = 5
-lr = 0.05
+lr = 0.5
 
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
 nb_train_samples = 2850
 nb_validation_samples = 995
-epochs = 50
+epochs = 100
 batch_size = 92
 
 dr = lr/epochs
