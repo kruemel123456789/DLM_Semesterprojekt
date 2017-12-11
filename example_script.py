@@ -54,7 +54,7 @@ np.random.seed(SEED)
 # dimensions of our images.
 img_width, img_height = 512, 512
 num_classes = 5
-lr = 1
+lr = 0.1
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
@@ -115,13 +115,13 @@ model.add(Dense(units=num_classes,
                 activation='softmax'))
 
 # compile
-sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay=0.0)
+sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay=0.1)
 model.compile(optimizer=sgd,
               loss='MSE',
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/001_inital_run')
+tensorboard = TensorBoard(log_dir='./logs/002_long_run')
     
 
 #model.compile(loss='binary_crossentropy',
