@@ -54,14 +54,17 @@ np.random.seed(SEED)
 # dimensions of our images.
 img_width, img_height = 512, 512
 num_classes = 5
-lr = 1
+lr = 0.05
+
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
 nb_train_samples = 2850
 nb_validation_samples = 995
 epochs = 50
-batch_size = 16
+batch_size = 92
+
+dr = lr/epochs
 
 if K.image_data_format() == 'channels_first':
     input_shape = (3, img_width, img_height)
@@ -115,7 +118,7 @@ model.add(Dense(units=num_classes,
                 activation='softmax'))
 
 # compile
-sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay=0.0)
+sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay=dr)
 model.compile(optimizer=sgd,
               loss='MSE',
               metrics=['accuracy'])
@@ -142,12 +145,14 @@ test_datagen = ImageDataGenerator(rescale=1. / 255)
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,
     target_size=(img_width, img_height),
+    shuffle=True,
     batch_size=batch_size,
     class_mode='categorical')
 
 validation_generator = test_datagen.flow_from_directory(
     validation_data_dir,
     target_size=(img_width, img_height),
+    shuffle=True,
     batch_size=batch_size,
     class_mode='categorical')
 
