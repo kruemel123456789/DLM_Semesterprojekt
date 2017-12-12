@@ -51,7 +51,7 @@ import numpy as np
 SEED = 4645
 np.random.seed(SEED)
 
-#LETZTER DURCHLAUF: CA. 26%, VORHER ABER SEHR SCHWANKEND!
+#LETZTER DURCHLAUF: CA. 20%, Bis epoch 10 nicht konvergiert
 
 
 # dimensions of our images.
@@ -90,6 +90,30 @@ model.add(Conv2D(filters=40,
                  input_shape=input_shape))
 model.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
 #model.add(Dropout(0.5))
+model.add(Conv2D(filters=40,
+                 kernel_size=5,
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same'))
+model.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
+model.add(Conv2D(filters=40,
+                 kernel_size=5,
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same'))
+model.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
+model.add(Conv2D(filters=40,
+                 kernel_size=5,
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same'))
+model.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
+model.add(Conv2D(filters=40,
+                 kernel_size=5,
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same'))
+model.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
 model.add(Conv2D(filters=40,
                  kernel_size=5,
                  kernel_initializer=weight_init,
@@ -135,7 +159,7 @@ model.compile(optimizer=Adamax,
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/002_Less_epochs_nw_changed')
+tensorboard = TensorBoard(log_dir='./logs/003_more_layers')
     
 
 #model.compile(loss='binary_crossentropy',
