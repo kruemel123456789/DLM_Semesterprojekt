@@ -45,10 +45,13 @@ from keras.optimizers import SGD, Adam
 from keras.callbacks import TensorBoard
 from keras.initializers import RandomNormal, glorot_uniform
 from keras import backend as K
+import keras
 import numpy as np
 
 SEED = 4645
 np.random.seed(SEED)
+
+#LETZTER DURCHLAUF: CA. 26%, VORHER ABER SEHR SCHWANKEND!
 
 
 # dimensions of our images.
@@ -61,8 +64,8 @@ train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
 nb_train_samples = 2850
 nb_validation_samples = 995
-epochs = 100
-batch_size = 92
+epochs = 50
+batch_size = 16
 
 dr = lr/epochs
 
@@ -79,52 +82,60 @@ activation_function = 'relu'
 
 #greate model
 model = Sequential()
-model.add(Conv2D(filters=4,
-                 kernel_size=3,
+model.add(Conv2D(filters=40,
+                 kernel_size=7,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-model.add(Dropout(0.5))
-model.add(Conv2D(filters=8,
-                 kernel_size=2,
+model.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
+#model.add(Dropout(0.5))
+model.add(Conv2D(filters=40,
+                 kernel_size=5,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same'))
-model.add(Dropout(0.2))
+model.add(MaxPooling2D(pool_size=(5, 5), strides=(2, 2)))
+#model.add(Dropout(0.2))
 model.add(Conv2D(filters=16,
                  kernel_size=2,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-model.add(Conv2D(filters=8,
-                 kernel_size=2,
-                 kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same'))
+#model.add(Conv2D(filters=8,
+#                 kernel_size=2,
+#                 kernel_initializer=weight_init,
+#                 activation=activation_function,
+#                 padding='same'))
+#model.add(Conv2D(filters=64,
+#                 kernel_size=2,
+#                 kernel_initializer=weight_init,
+#                 activation=activation_function,
+#                 padding='same'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 model.add(Flatten())
-model.add(Dense(units=100,
+model.add(Dense(units=256,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-model.add(Dense(units=25,
+model.add(Dropout(0.5))
+model.add(Dense(units=256,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-model.add(Activation('sigmoid'))
+#model.add(Activation('sigmoid'))
 model.add(Dense(units=num_classes,
                 kernel_initializer=weight_init,
                 activation='softmax'))
 
 # compile
 sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay=dr)
-model.compile(optimizer=sgd,
+Adamax = keras.optimizers.Adamax(lr = lr, decay = dr)
+model.compile(optimizer=Adamax,
               loss='MSE',
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/001_inital_run')
+tensorboard = TensorBoard(log_dir='./logs/002_Less_epochs_nw_changed')
     
 
 #model.compile(loss='binary_crossentropy',
