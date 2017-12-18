@@ -184,8 +184,9 @@ model.compile(optimizer=sgd,
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/004_100->500epochs_lrDECAY_addedr')
-checkpoint = ModelCheckpoint(models_dir + '/working_model1', monitor='acc', save_best_only = True)
+tensorboard = TensorBoard(log_dir='./logs/L_M2')
+filename="L_M2-e{epoch:02d}-val_acc{val_acc:.2f}.hdf5"
+checkpoint = ModelCheckpoint(models_dir + '/' + filename, monitor='val_acc', save_best_only = True)
 
 #model.compile(loss='binary_crossentropy',
 #              optimizer='rmsprop',
@@ -196,9 +197,13 @@ train_datagen = ImageDataGenerator(
     samplewise_center = True,
     samplewise_std_normalization = True,
     rescale=1. / 255,
-    shear_range=0.2,
+    shear_range=0.1,
     zoom_range=0.2,
-    horizontal_flip=False)
+    width_shift_range = 0.2,
+    height_shift_range = 0.2,
+    rotation_range = 180,
+    horizontal_flip=True,
+    vertical_flip = True)
 
 # this is the augmentation configuration we will use for testing:
 # only rescaling
@@ -230,11 +235,10 @@ model.fit_generator(
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size,
     verbose=1,
-    callbacks=[tensorboard,checkpoint],
-    initial_epoch=28)
+    callbacks=[tensorboard,checkpoint])
 
-model.save_weights(models_dir + '/L_weights1.h5')
+model.save_weights(models_dir + '/L_weights2.h5')
 architecture = model.to_json()
-with open (models_dir+'/L_architecture1.txt', 'w') as txt:
+with open (models_dir+'/L_architecture2.txt', 'w') as txt:
     txt.write(architecture)
-model.save(models_dir + '/L_model1.h5')
+model.save(models_dir + '/L_model2.h5')
