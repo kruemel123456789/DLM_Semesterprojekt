@@ -63,6 +63,7 @@ def main():
     # load model
     models_dir = '../models/'
     model = load_model(models_dir + 'model2.h5')
+
     
     # image paths
     test_data_path = 'test_res/images'
