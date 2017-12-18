@@ -13,8 +13,6 @@ from keras.models import load_model
 
 from PIL import Image
 
-models_dir = 'models'
-
 def create_submission(preds, names, group, file_description, output_folder):
     '''
        Creates a Submission as a DataFrame with the required format and 
@@ -63,6 +61,7 @@ class DataGenerator(object):
         
 def main():        
     # load model
+    models_dir = '../models/'
     model = load_model(models_dir + 'model2.h5')
     
     # image paths

@@ -230,7 +230,7 @@ model.fit_generator(
     verbose=1,
     callbacks=[tensorboard])
 
-model.save_weights(models_dir + 'weights6.h5')
+#model.save_weights(models_dir + 'weights6.h5')
 architecture = model.to_json()
 with open (models_dir + 'architecture6.txt', 'w') as txt:
     txt.write(architecture)
