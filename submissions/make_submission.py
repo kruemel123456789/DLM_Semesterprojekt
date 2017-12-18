@@ -63,7 +63,7 @@ class DataGenerator(object):
         
 def main():        
     # load model
-    model = load_model(models_dir + 'model2.h5')
+    model = load_model(models_dir + '/model2.h5')
     
     # image paths
     test_data_path = 'test_res/images'
