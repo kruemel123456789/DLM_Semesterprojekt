@@ -40,10 +40,10 @@ data/
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.layers import Activation, Dropout, Flatten, Dense
-from keras.optimizers import SGD, Adam
+from keras.layers import Dropout, Flatten, Dense
+from keras.optimizers import SGD
 from keras.callbacks import TensorBoard
-from keras.initializers import RandomNormal, glorot_uniform
+from keras.initializers import glorot_uniform
 from keras import backend as K
 from keras import losses
 import numpy as np
@@ -63,8 +63,8 @@ train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
 nb_train_samples = 2850
 nb_validation_samples = 995
-epochs = 500
-sgd_momentum = 0.5
+epochs = 10
+sgd_momentum = 0.1
 
 lr_decay = lr/epochs
 loss_function = losses.mean_squared_logarithmic_error
@@ -182,7 +182,7 @@ model.compile(optimizer=sgd,
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/004_100->500epochs_lrDECAY_addedr')
+tensorboard = TensorBoard(log_dir='./logs/005_10epochs_for_testsubmit')
     
 
 #model.compile(loss='binary_crossentropy',
@@ -194,11 +194,15 @@ train_datagen = ImageDataGenerator(
     rescale=1. / 255,
     shear_range=0.2,
     zoom_range=0.2,
-    horizontal_flip=False)
+    horizontal_flip=False,
+    samplewise_center=True,
+    samplewise_std_normalization= True)
 
 # this is the augmentation configuration we will use for testing:
 # only rescaling
-test_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator(rescale=1. / 255,
+    samplewise_center=True,
+    samplewise_std_normalization= True)
 
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,
@@ -225,8 +229,11 @@ model.fit_generator(
     verbose=1,
     callbacks=[tensorboard])
 
-model.save_weights('weights1.h5')
+model.save_weights('weights2.h5')
 architecture = model.to_json()
-with open ('DLM_Semesterprojekt/architecture1.txt', 'w') as txt:
+with open ('architecture2.txt', 'w') as txt:
     txt.write(architecture)
-model.save('model1.h5')
+model.save('model2.h5')
+
+#kappa_score = quadratic_weighted_kappa()
+#print("Kappa Score: {} \n".format(kappa_score))

@@ -25,7 +25,7 @@ def create_submission(preds, names, group, file_description, output_folder):
     # images names
     image_column = pd.Series(names, name='image')    
     # images predictions
-    level_column =  pd.Series(np.array(preds), name='level')
+    level_column =  pd.Series(np.array(preds).astype(np.int64), name='level')
     predictions = pd.concat([image_column, level_column], axis=1)
     
     # Save submission to csv
@@ -61,10 +61,10 @@ class DataGenerator(object):
         
 def main():        
     # load model
-    model = load_model('...')
+    model = load_model('model2.h5')
     
     # image paths
-    test_data_path = ''
+    test_data_path = 'test_res/images'
     image_paths = glob(test_data_path+'/*.tiff')
     
     # image names
@@ -75,13 +75,17 @@ def main():
     
     # predict
     y_preds = model.predict_generator(test_generator,
-                                      verbose=1)
+                                      verbose=1,
+                                      steps = len(image_paths)//32)
+    
+    y_out = np.argmax(y_preds,axis = 1) 
+    y_out = np.rint(y_out)
     
     # create and save submission to csv
-    create_submission(preds=y_preds, 
+    create_submission(preds=y_out, 
                       names=image_names,
-                      group='Gruppe-',
-                      file_description=='example',
+                      group='Gruppe2',
+                      file_description='test_submit',
                       output_folder='./submissions')
 
 if __name__=="__main__":
