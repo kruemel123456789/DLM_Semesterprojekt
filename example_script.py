@@ -61,9 +61,10 @@ pool_size = (3,3)
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
+models_dir = 'models'
 nb_train_samples = 2850
 nb_validation_samples = 995
-epochs = 10
+epochs = 500
 sgd_momentum = 0.1
 
 lr_decay = lr/epochs
@@ -182,7 +183,7 @@ model.compile(optimizer=sgd,
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/005_10epochs_for_testsubmit')
+tensorboard = TensorBoard(log_dir='./logs/006_500epochs_for_longrun')
     
 
 #model.compile(loss='binary_crossentropy',
@@ -229,11 +230,11 @@ model.fit_generator(
     verbose=1,
     callbacks=[tensorboard])
 
-model.save_weights('weights2.h5')
+model.save_weights(models_dir + 'weights6.h5')
 architecture = model.to_json()
-with open ('architecture2.txt', 'w') as txt:
+with open (models_dir + 'architecture6.txt', 'w') as txt:
     txt.write(architecture)
-model.save('model2.h5')
+model.save(models_dir + 'model6.h5')
 
 #kappa_score = quadratic_weighted_kappa()
 #print("Kappa Score: {} \n".format(kappa_score))
