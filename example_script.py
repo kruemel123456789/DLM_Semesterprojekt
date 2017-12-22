@@ -40,9 +40,9 @@ data/
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.layers import Dropout, Flatten, Dense
+from keras.layers import Dropout, Flatten, Dense, advanced_activations
 from keras.optimizers import SGD
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.initializers import glorot_uniform
 from keras import backend as K
 from keras import losses
@@ -56,20 +56,20 @@ np.random.seed(SEED)
 img_width, img_height = 512, 512
 num_classes = 5
 lr = 0.01
-batch_size = 16
-pool_size = (3,3)
+batch_size = 8
+pool_size = (2,2)
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
-models_dir = 'models'
-nb_train_samples = 2850
-nb_validation_samples = 995
+models_dir = 'models/'
+nb_train_samples = 850#35104
+nb_validation_samples = 995#2850
 epochs = 500
-sgd_momentum = 0.1
+sgd_momentum = 0.9
 
 lr_decay = lr/epochs
-loss_function = losses.mean_squared_logarithmic_error
-
+#loss_function = losses.mean_squared_logarithmic_error
+loss_function = losses.categorical_crossentropy
 
 
 if K.image_data_format() == 'channels_first':
@@ -81,7 +81,7 @@ else:
 weight_init = glorot_uniform(seed=SEED)
 
 # activation function
-activation_function = 'relu'    
+activation_function = 'linear'    
 
 #greate model
 model = Sequential()
@@ -108,14 +108,14 @@ model.add(Conv2D(filters=32,
                  padding='same',
                  input_shape=input_shape))
 model.add(BatchNormalization())
-model.add(Conv2D(filters=32,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
-model.add(BatchNormalization())
-model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+#model.add(Conv2D(filters=32,
+#                 kernel_size=3,
+#                 kernel_initializer=weight_init,
+#                 activation=activation_function,
+#                 padding='same',
+#                 input_shape=input_shape))
+#model.add(BatchNormalization())
+#model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=64,
                  kernel_size=3,
@@ -142,14 +142,14 @@ model.add(Conv2D(filters=96,
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
-model.add(Conv2D(filters=96,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
-model.add(BatchNormalization())
-model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+#model.add(Conv2D(filters=96,
+#                 kernel_size=3,
+#                 kernel_initializer=weight_init,
+#                 activation=activation_function,
+#                 padding='same',
+#                 input_shape=input_shape))
+#model.add(BatchNormalization())
+#model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=128,
                  kernel_size=3,
@@ -160,16 +160,16 @@ model.add(Conv2D(filters=128,
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
-model.add(Dropout(0.8))
+model.add(Dropout(0.5))
 
 model.add(Flatten())
 model.add(Dense(units=96,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-#model.add(Dense(units=5,
-#                kernel_initializer=weight_init,
-#                activation=activation_function))
-#model.add(Activation('sigmoid'))
+model.add(Dense(units=5,
+                kernel_initializer=weight_init,
+                activation=activation_function))
+model.add(advanced_activations.LeakyReLU(alpha=0.001))
 model.add(Dense(units=num_classes,
                 kernel_initializer=weight_init,
                 activation='softmax'))
@@ -183,7 +183,8 @@ model.compile(optimizer=sgd,
               metrics=['accuracy'])
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/006_500epochs_for_longrun')
+tensorboard = TensorBoard(log_dir='./logs/011_changed_activation')
+checkpoint = ModelCheckpoint(models_dir + '/model9',monitor = 'val_acc', save_best_only = True)
     
 
 #model.compile(loss='binary_crossentropy',
@@ -228,13 +229,13 @@ model.fit_generator(
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size,
     verbose=1,
-    callbacks=[tensorboard])
+    callbacks=[tensorboard, checkpoint])
 
-#model.save_weights(models_dir + 'weights6.h5')
+model.save_weights(models_dir + 'weights9.h5')
 architecture = model.to_json()
-with open (models_dir + 'architecture6.txt', 'w') as txt:
+with open (models_dir + 'architecture9.txt', 'w') as txt:
     txt.write(architecture)
-model.save(models_dir + 'model6.h5')
+model.save(models_dir + 'model9.h5')
 
 #kappa_score = quadratic_weighted_kappa()
 #print("Kappa Score: {} \n".format(kappa_score))
