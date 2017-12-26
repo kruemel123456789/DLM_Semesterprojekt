@@ -4,3 +4,4 @@ Testen mit:
 - height_shift_range = 0.2
 - Rotationen
 - Flipping
+- Bild-Normalisierung ueber alle Bilder
