@@ -53,8 +53,8 @@ import numpy as np
 
 now = datetime.now()
 
-N_OF_RUN = "015" + now.strftime("-%d_%m-%H_%M")
-DESCRIPTION_OF_RUN = "_featurewise_CENTER_STDNORM_more_input_modifications_std_mean"
+N_OF_RUN = "016" + now.strftime("-%d_%m-%H_%M")
+DESCRIPTION_OF_RUN = "_changed_dropout_layers"
 
 mean = 79.6642
 std = 42.8057
@@ -68,13 +68,13 @@ np.random.seed(SEED)
 img_width, img_height = 512, 512
 num_classes = 5
 lr = 0.1
-batch_size = 4
+batch_size = 2
 pool_size = (2,2)
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
 models_dir = 'models/'
-nb_train_samples = 850#35104
+nb_train_samples = 2850#35104
 nb_validation_samples = 995#2850
 epochs = 500
 sgd_momentum = 0.9
@@ -102,6 +102,7 @@ model.add(Conv2D(filters=256,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  input_shape=input_shape))
+model.add(Dropout(0.8))
 model.add(Conv2D(filters=256,
                  kernel_size=3,
                  kernel_initializer=weight_init,
@@ -129,10 +130,10 @@ model.add(Flatten())
 model.add(Dense(units=128,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-model.add(Dropout(0.5))
 model.add(Dense(units=64,
                 kernel_initializer=weight_init,
                 activation=activation_function))
+#model.add(Dropout(0.5))
 model.add(Dense(units=32,
                 kernel_initializer=weight_init,
                 activation=activation_function))
