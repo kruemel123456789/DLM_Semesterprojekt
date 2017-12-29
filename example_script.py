@@ -53,8 +53,8 @@ import numpy as np
 
 now = datetime.now()
 
-N_OF_RUN = "016" + now.strftime("-%d_%m-%H_%M")
-DESCRIPTION_OF_RUN = "_changed_dropout_layers"
+N_OF_RUN = "017" + now.strftime("-%d_%m-%H_%M")
+DESCRIPTION_OF_RUN = "_back_to_old_model_architecture"
 
 mean = 79.6642
 std = 42.8057
@@ -67,8 +67,8 @@ np.random.seed(SEED)
 # dimensions of our images.
 img_width, img_height = 512, 512
 num_classes = 5
-lr = 0.1
-batch_size = 2
+lr = 0.01
+batch_size = 16
 pool_size = (2,2)
 
 train_data_dir = 'train_res/training'
@@ -97,44 +97,71 @@ activation_function = 'relu'
 
 #greate model
 model = Sequential()
-model.add(Conv2D(filters=256,
+model.add(Conv2D(filters=16,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  input_shape=input_shape))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=16,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+model.add(Conv2D(filters=32,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=32,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+model.add(Conv2D(filters=64,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(Conv2D(filters=64,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+model.add(Conv2D(filters=96,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+model.add(Conv2D(filters=96,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(BatchNormalization())
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+model.add(Conv2D(filters=128,
+                 kernel_size=3,
+                 kernel_initializer=weight_init,
+                 activation=activation_function))
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+
 model.add(Dropout(0.8))
-model.add(Conv2D(filters=256,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-model.add(Conv2D(filters=128,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function))
-model.add(Conv2D(filters=128,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-model.add(Conv2D(filters=32,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function))
-model.add(Conv2D(filters=32,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
 model.add(Flatten())
-model.add(Dense(units=128,
+model.add(Dense(units=96,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-model.add(Dense(units=64,
-                kernel_initializer=weight_init,
-                activation=activation_function))
-#model.add(Dropout(0.5))
-model.add(Dense(units=32,
+model.add(Dense(units=5,
                 kernel_initializer=weight_init,
                 activation=activation_function))
 model.add(Dense(units=num_classes,
@@ -160,10 +187,12 @@ checkpoint = ModelCheckpoint(models_dir + '/model' + N_OF_RUN ,monitor = 'val_ac
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
-    shear_range=0.2,
+    shear_range=0.1,
     zoom_range=0.2,
     rotation_range=0.2,
     channel_shift_range=0.2,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
     horizontal_flip=True,
     vertical_flip=True,
     featurewise_center=True,
