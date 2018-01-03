@@ -64,21 +64,24 @@ def main():
     models_dir = '../models/'
     model = load_model(models_dir + 'L_M4/L_M4-e50-val_acc0.43.hdf5')
 
+
+    batch_size = 32
     
     # image paths
     test_data_path = '../test_res/images'
+
     image_paths = glob(test_data_path+'/*.tiff')
     
     # image names
     image_names = [im.split('/')[-1].split('.')[0] for im in image_paths]
     
     # data generator
-    test_generator = DataGenerator(batch_size=32).generate(image_paths)
+    test_generator = DataGenerator(batch_size=batch_size).generate(image_paths)
     
     # predict
     y_preds = model.predict_generator(test_generator,
                                       verbose=1,
-                                      steps = len(image_paths)//32)
+                                      steps = len(image_paths)//batch_size)
     
     y_out = np.argmax(y_preds,axis = 1) 
     y_out = np.rint(y_out)
@@ -87,7 +90,11 @@ def main():
     create_submission(preds=y_out, 
                       names=image_names,
                       group='Gruppe2',
+<<<<<<< HEAD:submissions/make_submission.py
                       file_description='model1_L',
+=======
+                      file_description='8er',
+>>>>>>> 05648442153eef3d8a8e4ac700545ddbcf7d1a39:make_submission.py
                       output_folder='./submissions')
 
 if __name__=="__main__":

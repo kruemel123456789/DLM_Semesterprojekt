@@ -40,13 +40,25 @@ data/
 from keras.preprocessing.image import ImageDataGenerator
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
-from keras.layers import Dropout, Flatten, Dense
-from keras.optimizers import SGD
-from keras.callbacks import TensorBoard
+from keras.layers import Dropout, Flatten, Dense, advanced_activations
+from keras.optimizers import SGD, Adamax
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.initializers import glorot_uniform
 from keras import backend as K
 from keras import losses
+
+from datetime import datetime
+
 import numpy as np
+
+now = datetime.now()
+
+N_OF_RUN = "017" + now.strftime("-%d_%m-%H_%M")
+DESCRIPTION_OF_RUN = "_back_to_old_model_architecture"
+
+mean = 79.6642
+std = 42.8057
+
 
 SEED = 4645
 np.random.seed(SEED)
@@ -57,19 +69,19 @@ img_width, img_height = 512, 512
 num_classes = 5
 lr = 0.01
 batch_size = 16
-pool_size = (3,3)
+pool_size = (2,2)
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
-models_dir = 'models'
-nb_train_samples = 2850
-nb_validation_samples = 995
+models_dir = 'models/'
+nb_train_samples = 2850#35104
+nb_validation_samples = 995#2850
 epochs = 500
-sgd_momentum = 0.1
+sgd_momentum = 0.9
 
 lr_decay = lr/epochs
-loss_function = losses.mean_squared_logarithmic_error
-
+#loss_function = loskises.mean_squared_logarithmic_error
+loss_function = losses.categorical_crossentropy
 
 
 if K.image_data_format() == 'channels_first':
@@ -89,76 +101,59 @@ model.add(Conv2D(filters=16,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function,
-                 padding='same',
                  input_shape=input_shape))
 model.add(BatchNormalization())
 model.add(Conv2D(filters=16,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=32,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(Conv2D(filters=32,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=64,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(Conv2D(filters=64,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=96,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=96,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
+                 activation=activation_function))
 model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=128,
                  kernel_size=3,
                  kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
-model.add(BatchNormalization())
+                 activation=activation_function))
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
 
 model.add(Dropout(0.8))
 
@@ -166,24 +161,23 @@ model.add(Flatten())
 model.add(Dense(units=96,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-#model.add(Dense(units=5,
-#                kernel_initializer=weight_init,
-#                activation=activation_function))
-#model.add(Activation('sigmoid'))
+model.add(Dense(units=5,
+                kernel_initializer=weight_init,
+                activation=activation_function))
 model.add(Dense(units=num_classes,
                 kernel_initializer=weight_init,
                 activation='softmax'))
 
 # compile
-
-sgd = SGD(lr=lr, momentum=sgd_momentum, nesterov=False, decay=lr_decay)
-
+sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay = 1e-6)
+adam = Adamax(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 model.compile(optimizer=sgd,
-              loss=loss_function,
+              loss='categorical_crossentropy',
               metrics=['accuracy'])
-    
+
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/006_500epochs_for_longrun')
+tensorboard = TensorBoard(log_dir=('./logs/' + N_OF_RUN + DESCRIPTION_OF_RUN))
+checkpoint = ModelCheckpoint(models_dir + '/model' + N_OF_RUN ,monitor = 'val_acc', save_best_only = True)
     
 
 #model.compile(loss='binary_crossentropy',
@@ -193,31 +187,41 @@ tensorboard = TensorBoard(log_dir='./logs/006_500epochs_for_longrun')
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
-    shear_range=0.2,
+    shear_range=0.1,
     zoom_range=0.2,
-    horizontal_flip=False,
-    samplewise_center=True,
-    samplewise_std_normalization= True)
+    rotation_range=0.2,
+    channel_shift_range=0.2,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    horizontal_flip=True,
+    vertical_flip=True,
+    featurewise_center=True,
+    featurewise_std_normalization= True)
 
 # this is the augmentation configuration we will use for testing:
 # only rescaling
-test_datagen = ImageDataGenerator(rescale=1. / 255,
-    samplewise_center=True,
-    samplewise_std_normalization= True)
+val_datagen = ImageDataGenerator(rescale=1. / 255,
+    featurewise_center=True,
+    featurewise_std_normalization= True)
 
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,
     target_size=(img_width, img_height),
     shuffle=True,
+    seed=SEED,
     batch_size=batch_size,
     class_mode='categorical')
 
-validation_generator = test_datagen.flow_from_directory(
+validation_generator = val_datagen.flow_from_directory(
     validation_data_dir,
     target_size=(img_width, img_height),
     shuffle=True,
+    seed=SEED,
     batch_size=batch_size,
     class_mode='categorical')
+
+train_datagen.fit_from_directory(mean,std)
+val_datagen.fit_from_directory(mean,std)
 
 model.summary()
 
@@ -228,13 +232,14 @@ model.fit_generator(
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size,
     verbose=1,
-    callbacks=[tensorboard])
+    callbacks=[tensorboard, checkpoint])
 
-#model.save_weights(models_dir + 'weights6.h5')
+model.save_weights(models_dir + 'weights' + N_OF_RUN + '.h5')
 architecture = model.to_json()
-with open (models_dir + 'architecture6.txt', 'w') as txt:
+with open (models_dir + 'architecture' + N_OF_RUN + '.txt', 'w') as txt:
     txt.write(architecture)
-model.save(models_dir + 'model6.h5')
+model.save(models_dir + 'model' + N_OF_RUN + '.h5')
 
 #kappa_score = quadratic_weighted_kappa()
 #print("Kappa Score: {} \n".format(kappa_score))
+
