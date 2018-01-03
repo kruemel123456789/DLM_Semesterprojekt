@@ -44,7 +44,7 @@ from keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.optimizers import SGD, Adam
 from keras.callbacks import TensorBoard
-from keras.initializers import RandomNormal, glorot_uniform
+from keras.initializers import RandomNormal, glorot_uniform, glorot_normal
 from keras import backend as K
 from keras import losses
 import keras
@@ -56,20 +56,21 @@ np.random.seed(SEED)
 # dimensions of our images.
 img_width, img_height = 512, 512
 num_classes = 5
-lr = 0.01
+lr = 0.0001
 batch_size = 16
-pool_size = (3,3)
+pool_size = (2,2)
 
 train_data_dir = 'train_res/training'
 validation_data_dir = 'train_res/vali'
 models_dir = 'models'
 nb_train_samples = 2850
 nb_validation_samples = 995
-epochs = 500
+epochs = 200
 sgd_momentum = 0.5
 
 lr_decay = lr/epochs
-loss_function = losses.mean_squared_logarithmic_error
+#loss_function = losses.mean_squared_logarithmic_error
+loss_function = losses.categorical_crossentropy
 
 
 
@@ -79,7 +80,7 @@ else:
     input_shape = (img_width, img_height, 3)
     
 # weight initialization
-weight_init = glorot_uniform(seed=SEED)
+weight_init = glorot_normal(seed=SEED)
 
 # activation function
 activation_function = 'relu'    
@@ -87,105 +88,105 @@ activation_function = 'relu'
 #greate model
 model = Sequential()
 model.add(Conv2D(filters=16,
-                 kernel_size=3,
+                 kernel_size=(2,2),
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
+                 strides = 1,
                  input_shape=input_shape))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(Conv2D(filters=16,
-                 kernel_size=3,
+                 kernel_size=(2,2),
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
+                 strides = 1,
                  input_shape=input_shape))
-model.add(BatchNormalization())
+model.add(Conv2D(filters=16,
+                 kernel_size=(2,2),
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same',
+                 strides = 1))
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
+model.add(BatchNormalization())
 model.add(Conv2D(filters=32,
-                 kernel_size=3,
+                 kernel_size=(2,2),
+                 strides = 1,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(BatchNormalization())
 model.add(Conv2D(filters=32,
-                 kernel_size=3,
+                 kernel_size=(2,2),
+                 strides = 1,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
-
+model.add(BatchNormalization())
 model.add(Conv2D(filters=64,
-                 kernel_size=3,
+                 kernel_size=(2,2),
+                 strides = 1,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(BatchNormalization())
 model.add(Conv2D(filters=64,
-                 kernel_size=3,
+                 kernel_size=(2,2),
+                 strides = 1,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=96,
-                 kernel_size=3,
+                 kernel_size=(2,2),
+                 strides = 1,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
-
-model.add(Conv2D(filters=96,
-                 kernel_size=3,
-                 kernel_initializer=weight_init,
-                 activation=activation_function,
-                 padding='same',
-                 input_shape=input_shape))
 model.add(BatchNormalization())
-model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
-
 model.add(Conv2D(filters=128,
-                 kernel_size=3,
+                 kernel_size=(2,2),
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  padding='same',
                  input_shape=input_shape))
-model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
-
+model.add(BatchNormalization())
 #model.add(Dropout(0.8))
 
 model.add(Flatten())
-model.add(Dense(units=96,
+model.add(Dense(units=192,
                 kernel_initializer=weight_init,
                 activation=activation_function))
-#model.add(Dense(units=5,
-#                kernel_initializer=weight_init,
-#                activation=activation_function))
-#model.add(Activation('sigmoid'))
+model.add(Dropout(0.5))
+model.add(Dense(units96,
+                kernel_initializer=weight_init,
+                activation=activation_function))
 model.add(Dense(units=num_classes,
                 kernel_initializer=weight_init,
                 activation='softmax'))
 
 # compile
 
-sgd = SGD(lr=lr, momentum=sgd_momentum, nesterov=False, decay=lr_decay)
+#sgd = SGD(lr=lr, momentum=sgd_momentum, nesterov=False, decay=lr_decay)
+rms = keras.optimizers.RMSprop(lr=0.00001)
 
-model.compile(optimizer=sgd,
+model.compile(optimizer=rms,
               loss=loss_function,
               metrics=['accuracy'])
+
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/L_M2')
-filename="L_M2-e{epoch:02d}-val_acc{val_acc:.2f}.hdf5"
+tensorboard = TensorBoard(log_dir='./logs/L_M5')
+filename="L_M40-e{epoch:02d}-val_acc{val_acc:.2f}.hdf5"
 checkpoint = ModelCheckpoint(models_dir + '/' + filename, monitor='val_acc', save_best_only = True)
 
 #model.compile(loss='binary_crossentropy',
@@ -237,8 +238,8 @@ model.fit_generator(
     verbose=1,
     callbacks=[tensorboard,checkpoint])
 
-model.save_weights(models_dir + '/L_weights2.h5')
+model.save_weights(models_dir + '/L_weights40.h5')
 architecture = model.to_json()
-with open (models_dir+'/L_architecture2.txt', 'w') as txt:
+with open (models_dir+'/L_architecture40.txt', 'w') as txt:
     txt.write(architecture)
-model.save(models_dir + '/L_model2.h5')
+model.save(models_dir + '/L_model40.h5')
