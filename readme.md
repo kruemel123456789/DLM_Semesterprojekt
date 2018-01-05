@@ -5,3 +5,4 @@ Testen mit:
 - Rotationen
 - Flipping
 - Bild-Normalisierung ueber alle Bilder
+- andere Loss-Funktion (z.B. category cross-entropy testen)

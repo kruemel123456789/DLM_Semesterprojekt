@@ -61,14 +61,21 @@ class DataGenerator(object):
         
 def main():        
     # load model
+
+    #Felix
     #models_dir = '../models/'
     model = load_model('models/model019-31_12-10_06')
+
+    #Linus
+    #models_dir = '../models/'
+    #model = load_model(models_dir + 'L_M4/L_M4-e50-val_acc0.43.hdf5')
+
 
     batch_size = 32
     
     # image paths
-    #test_data_path = 'train_res/vali/0'
-    test_data_path = 'test_res/images'
+    test_data_path = '../test_res/images'
+
     image_paths = glob(test_data_path+'/*.tiff')
     
     # image names
@@ -89,7 +96,9 @@ def main():
     create_submission(preds=y_out, 
                       names=image_names,
                       group='Gruppe2',
+
                       file_description='19er',
+
                       output_folder='./submissions')
 
 if __name__=="__main__":
