@@ -62,7 +62,7 @@ class DataGenerator(object):
 def main():        
     # load model
     #models_dir = '../models/'
-    model = load_model('models/model8')
+    model = load_model('models/model019-31_12-10_06')
 
     batch_size = 32
     
@@ -89,7 +89,7 @@ def main():
     create_submission(preds=y_out, 
                       names=image_names,
                       group='Gruppe2',
-                      file_description='8er',
+                      file_description='19er',
                       output_folder='./submissions')
 
 if __name__=="__main__":
