@@ -53,8 +53,8 @@ import numpy as np
 
 now = datetime.now()
 
-N_OF_RUN = "017" + now.strftime("-%d_%m-%H_%M")
-DESCRIPTION_OF_RUN = "_back_to_old_model_architecture"
+N_OF_RUN = "021" + now.strftime("-%d_%m-%H_%M")
+DESCRIPTION_OF_RUN = "_removed_batch_norm"
 
 mean = 79.6642
 std = 42.8057
@@ -67,8 +67,8 @@ np.random.seed(SEED)
 # dimensions of our images.
 img_width, img_height = 512, 512
 num_classes = 5
-lr = 0.01
-batch_size = 16
+lr = 0.1
+batch_size = 32
 pool_size = (2,2)
 
 train_data_dir = 'train_res/training'
@@ -77,7 +77,7 @@ models_dir = 'models/'
 nb_train_samples = 2850#35104
 nb_validation_samples = 995#2850
 epochs = 500
-sgd_momentum = 0.9
+sgd_momentum = 0.5
 
 lr_decay = lr/epochs
 #loss_function = loskises.mean_squared_logarithmic_error
@@ -102,50 +102,52 @@ model.add(Conv2D(filters=16,
                  kernel_initializer=weight_init,
                  activation=activation_function,
                  input_shape=input_shape))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(Conv2D(filters=16,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=32,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(Conv2D(filters=32,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+
+model.add(Dropout(0.8))
 
 model.add(Conv2D(filters=64,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(Conv2D(filters=64,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=96,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=96,
                  kernel_size=3,
                  kernel_initializer=weight_init,
                  activation=activation_function))
-model.add(BatchNormalization())
+#model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
 model.add(Conv2D(filters=128,
@@ -154,13 +156,13 @@ model.add(Conv2D(filters=128,
                  activation=activation_function))
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 
-
-model.add(Dropout(0.8))
-
 model.add(Flatten())
 model.add(Dense(units=96,
                 kernel_initializer=weight_init,
                 activation=activation_function))
+
+model.add(Dropout(0.5))
+
 model.add(Dense(units=5,
                 kernel_initializer=weight_init,
                 activation=activation_function))
@@ -169,10 +171,10 @@ model.add(Dense(units=num_classes,
                 activation='softmax'))
 
 # compile
-sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay = 1e-6)
-adam = Adamax(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+sgd = SGD(lr=lr, momentum=0.9, nesterov=True, decay = lr_decay)
+adam = Adamax(lr=lr, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=lr_decay)
 model.compile(optimizer=sgd,
-              loss='categorical_crossentropy',
+              loss=loss_function,
               metrics=['accuracy'])
 
 # Callbacks

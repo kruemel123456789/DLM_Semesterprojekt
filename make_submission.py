@@ -68,8 +68,14 @@ class DataGenerator(object):
         
 def main():        
     # load model
+
+    #Felix
+    #models_dir = '../models/'
+    #model = load_model('models/model019-31_12-10_06')
+
+    #Linus
     models_dir = 'models/'
-    model = load_model(models_dir + 'submodel.hdf5')
+    model = load_model(models_dir + 'L_M4/L_M4-e50-val_acc0.43.hdf5')
 
 
     batch_size = 64
@@ -116,6 +122,7 @@ def main():
                       names=image_names,
                       group='Gruppe2',
                       file_description='L_MVGG_4-e67',
+
                       output_folder='./submissions')
 
 if __name__=="__main__":
