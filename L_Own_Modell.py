@@ -59,7 +59,7 @@ SEED = 4645
 np.random.seed(SEED)
 
 # dimensions of our images.
-img_width, img_height = 224, 224
+img_width, img_height = 512, 512
 num_classes = 5
 lr = 1e-5#0.00001
 batch_size = 16
@@ -71,14 +71,14 @@ validation_data_dir = 'train_res/vali'
 models_dir = 'models'
 nb_train_samples = 2850
 nb_validation_samples = 995
-epochs = 90
+epochs = 70
 sgd_momentum = 0.9#0.5
 
 lr_decay = 0#lr/epochs
 #loss_function = losses.mean_squared_logarithmic_error
 loss_function = losses.categorical_crossentropy
 
-K.set_image_data_format("channels_last") #first fr eigenes modell!
+K.set_image_data_format("channels_first") #first fr eigenes modell!
 
 if K.image_data_format() == 'channels_first':
     input_shape = (3, img_width, img_height)
@@ -148,22 +148,22 @@ model.add(Conv2D(filters=64,
                  padding='same',
                  input_shape=input_shape))
 model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
-#model.add(Conv2D(filters=96,
-#                 kernel_size=(2,2),
-#                 strides = 1,
-#                 kernel_initializer=weight_init,
-#                 activation=activation_function,
-#                 padding='same',
-#                 input_shape=input_shape))
-#model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+model.add(Conv2D(filters=96,
+                 kernel_size=(2,2),
+                 strides = 1,
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same',
+                 input_shape=input_shape))
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 model.add(BatchNormalization())
-#model.add(Conv2D(filters=128,
-#                 kernel_size=(2,2),
-#                 kernel_initializer=weight_init,
-#                 activation=activation_function,
-#                 padding='same',
-#                 input_shape=input_shape))
-#model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
+model.add(Conv2D(filters=128,
+                 kernel_size=(2,2),
+                 kernel_initializer=weight_init,
+                 activation=activation_function,
+                 padding='same',
+                 input_shape=input_shape))
+model.add(MaxPooling2D(pool_size=pool_size, strides=(2, 2)))
 model.add(BatchNormalization())
 model.add(Dropout(0.5))
 
@@ -182,20 +182,8 @@ model.add(Dense(units=num_classes,
 # compile
 
 sgd = SGD(lr=lr, momentum=sgd_momentum, nesterov=False, decay=lr_decay)
-rms = keras.optimizers.RMSprop(lr=1e-6)
+rms = keras.optimizers.RMSprop(lr=1e-3)
 
-
-base_model = VGG19(weights = 'imagenet', input_shape=(224,224,3),include_top = False)
-#model = keras.models.Model(inputs=base_model.input, outputs = base_model.get_layer('block4_pool').output)
-
-x = Flatten()(base_model.output)
-x = Dropout(0.5)(x)
-x = Dense(128, kernel_initializer = weight_init, activation = activation_function)(x)
-x = Dense(192, kernel_initializer = weight_init, activation = activation_function)(x)
-x = Dense(num_classes, kernel_initializer=weight_init,
-                activation='softmax')(x)
-
-model = keras.models.Model(inputs = base_model.input, outputs = x)
 
 model.summary()
 
@@ -205,8 +193,8 @@ model.compile(optimizer=rms,
 
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/L_MVGG_8')
-filename="L_MVGG_8-e{epoch:02d}-val_acc{val_acc:.2f}.hdf5"
+tensorboard = TensorBoard(log_dir='./logs/L_M51')
+filename="L_M51-e{epoch:02d}-val_acc{val_acc:.2f}.hdf5"
 checkpoint = ModelCheckpoint(models_dir + '/' + filename, monitor='val_acc', save_best_only = True)
 
 #model.compile(loss='binary_crossentropy',
@@ -215,14 +203,14 @@ checkpoint = ModelCheckpoint(models_dir + '/' + filename, monitor='val_acc', sav
 
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
-    #samplewise_center = True,
-    #samplewise_std_normalization = True,
-    #featurewise_center = True,
-    #featurewise_std_normalization = True,
+    samplewise_center = True,
+    samplewise_std_normalization = True,
+    featurewise_center = True,
+    featurewise_std_normalization = True,
     #zca_whitening = True,
-    #rescale=1. / 255,
-    shear_range=0.2,
-    zoom_range=0.2,
+    rescale=1. / 255,
+    shear_range=0.05,
+    zoom_range=0.1,
     width_shift_range = 0.1,
     height_shift_range = 0.1,
     rotation_range = 360,
@@ -230,7 +218,7 @@ train_datagen = ImageDataGenerator(
     vertical_flip = True,
     fill_mode = "constant",
     cval = 0.,
-    preprocessing_function = ReadInImages.preprocess_img,
+    #preprocessing_function = ReadInImages.preprocess_img,
     )
 
 fitData = ReadInImages.getAveragePics()
@@ -238,13 +226,14 @@ fitData = ReadInImages.getAveragePics()
 train_datagen.fit(fitData)
 
 
+
 # this is the augmentation configuration we will use for testing:
 # only rescaling
 test_datagen = ImageDataGenerator(
         #rescale=1. / 255,
-        #samplewise_center = True,
-        #samplewise_std_normalization = True)
-        preprocessing_function = ReadInImages.preprocess_img,
+        samplewise_center = True,
+        samplewise_std_normalization = True,
+        #preprocessing_function = ReadInImages.preprocess_img,
         )
 
 train_generator = train_datagen.flow_from_directory(
@@ -252,7 +241,7 @@ train_generator = train_datagen.flow_from_directory(
     target_size=(img_width, img_height),
     shuffle=True,
     batch_size=batch_size,
-    class_mode='categorical', save_to_dir = None)#debug_dir)#debug_dir)
+    class_mode='categorical', save_to_dir = None)#debug_dir)
 
 
 validation_generator = test_datagen.flow_from_directory(
@@ -272,9 +261,9 @@ model.fit_generator(
     validation_steps=nb_validation_samples // batch_size,
     verbose=1,
     callbacks=[tensorboard,checkpoint])
-
-model.save_weights(models_dir + '/L_weightsVGG_8.h5')
+j
+model.save_weights(models_dir + '/L_weights51.h5')
 architecture = model.to_json()
-with open (models_dir+'/L_architectureVGG_8.txt', 'w') as txt:
+with open (models_dir+'/L_architecture51.txt', 'w') as txt:
     txt.write(architecture)
-model.save(models_dir + '/L_modelVGG_8.h5')
+model.save(models_dir + '/L_model51.h5')
