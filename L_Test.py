@@ -50,10 +50,16 @@ from keras import losses
 import keras
 import numpy as np
 import ReadInImages
+from keras.models import load_model
 
 from keras.applications.vgg19 import VGG19
 from keras.preprocessing import image
 from keras.applications.vgg19 import preprocess_input
+
+now = datetime.now()
+
+N_OF_RUN = "021" + now.strftime("-%d_%m-%H_%M")
+DESCRIPTION_OF_RUN = "_removed_batch_norm"
 
 SEED = 4645
 np.random.seed(SEED)
@@ -68,13 +74,13 @@ pool_size = (2,2)
 train_data_dir = 'train_res/training'
 debug_dir = 'debugPics'
 validation_data_dir = 'train_res/vali'
-models_dir = 'models'
+models_dir = 'models/'
 nb_train_samples = 2850
-nb_validation_samples = 995
-epochs = 90
+nb_validation_samples = 500
+epochs = 300
 sgd_momentum = 0.9#0.5
 
-lr_decay = 0#lr/epochs
+lr_decay = 1e-6#lr/epochs
 #loss_function = losses.mean_squared_logarithmic_error
 loss_function = losses.categorical_crossentropy
 
@@ -199,15 +205,17 @@ model = keras.models.Model(inputs = base_model.input, outputs = x)
 
 model.summary()
 
-model.compile(optimizer=rms,
+model = load_model(models_dir + 'F_MVGG_10.hdf5')
+
+model.compile(optimizer=sgd,
               loss=loss_function,
               metrics=['accuracy'])
 
     
 # Callbacks
-tensorboard = TensorBoard(log_dir='./logs/L_MVGG_8')
-filename="L_MVGG_8-e{epoch:02d}-val_acc{val_acc:.2f}.hdf5"
-checkpoint = ModelCheckpoint(models_dir + '/' + filename, monitor='val_acc', save_best_only = True)
+tensorboard = TensorBoard(log_dir='./logs/F_MVGG_10')
+filename="F_MVGG_10.hdf5"
+checkpoint = ModelCheckpoint(models_dir + filename, monitor='val_acc', save_best_only = True)
 
 #model.compile(loss='binary_crossentropy',
 #              optimizer='rmsprop',
@@ -233,9 +241,9 @@ train_datagen = ImageDataGenerator(
     preprocessing_function = ReadInImages.preprocess_img,
     )
 
-fitData = ReadInImages.getAveragePics()
+#fitData = ReadInImages.getAveragePics()
 
-train_datagen.fit(fitData)
+#train_datagen.fit(fitData)
 
 
 # this is the augmentation configuration we will use for testing:
@@ -273,8 +281,8 @@ model.fit_generator(
     verbose=1,
     callbacks=[tensorboard,checkpoint])
 
-model.save_weights(models_dir + '/L_weightsVGG_8.h5')
+model.save_weights(models_dir + '/F_weightsVGG_10.h5')
 architecture = model.to_json()
-with open (models_dir+'/L_architectureVGG_8.txt', 'w') as txt:
+with open (models_dir+'/F_architectureVGG_10.txt', 'w') as txt:
     txt.write(architecture)
-model.save(models_dir + '/L_modelVGG_8.h5')
+model.save(models_dir + '/F_modelVGG_10.h5')
